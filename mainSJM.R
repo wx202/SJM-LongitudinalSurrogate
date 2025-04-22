@@ -1,11 +1,10 @@
-rm(list=ls())
+#load libraries and functions
+set.seed(100)
 timestart<-Sys.time()
 options(warn=-1)
-setwd("/Users/xuanwang/Dropbox (Harvard University)/Xuan/Surrogate_Longitudinal/simu")
-# setwd("/home/xw127/")
 source('funsSJM.R')
-library(survival);library(MASS);#library("survminer")
-library("JMbayes2");#library(rstanarm)
+library(survival);library(MASS);
+library("JMbayes2");
 library(dplyr)
 
 #### example:linear 
@@ -33,8 +32,15 @@ for (i in 1:n){
     , error = function(e){})
 }
 
-out=est.linear(dat,re=5)
+#run the function, computationally intensive
+#re is the number of replications for the bootstrap
+#re is set to 5 here for illustration but should be larger in practice
+#outputs stacked vector of estimates and standard errors, out.nice is nice display
 
+out=est.linear(dat,re=5)
+out.nice = as.data.frame(matrix(out, nrow = 2,byrow = TRUE))
+rownames(out.nice) = c("Estimate","SE")
+out.nice
 
 #### example: nonlinear
 load('dat.example.nonlinear.rda')
@@ -62,9 +68,17 @@ for (i in 1:n){
 }
 
 gap=.1; nn=length(seq(0,15,gap))
-out=est.nonlinear(dat,re=5)
- 
 
-timeend<-Sys.time()
+#run the function, computationally intensive
+#re is the number of replications for the bootstrap
+#re is set to 5 here for illustration but should be larger in practice
+#out.nice is nice display
+
+out=est.nonlinear(dat,re=5)
+out.nice = data.frame(out$delta.s.hat,out$delta.s.se, out$delta.s.low,out$delta.s.up)
+rownames(out.nice) = c("Estimate","SE","Lower 95%", "Upper 95%")
+out.nice
+
+jtimeend<-Sys.time()
 runningtime<-timeend-timestart
 print(runningtime) 
