@@ -4,10 +4,7 @@ VTM<-function(vc, dm){
 
 
 gen.bootstrap.weights=function( n, num.perturb=500){
-  # set.seed(data.num)
   sapply(1:num.perturb,function(x) sample(1:n,n,replace=TRUE))
-  #weights = apply(index,2,function(x) tabulate(x,nbins=n))
-  #list(index=index,weights=weights)
 }
 
 
@@ -35,27 +32,16 @@ ends <- c(0, tau)
 Lambda <- matrix(0, n, length(ends) - 1)
 for (j in 1:(length(ends)-1)){ Lambda[,j]=v2*exp(X*gamma0) }
 
-# out=poisson(T,Lambda,ends,X*gamma0,v2);
 out=poisson2(T,Lambda=matrix(20,nrow=n,ncol=1),ends,X*gamma0,v2);
 obsT=out$obsT; dN=out$dN; m=out$m
 tn=max(m);
-# [T1,I,J]=unique(obsT);
-# array=obsT
-# sortIndex = sort(array, index.return=TRUE)$ix
-# array_indices = arrayInd(sortIndex,dim(array),dimnames(array),useNames = TRUE)
-# aa=obsT[array_indices]
-# ind=which(aa>0)-1
-# T1=aa[ind]
-# Ind=array_indices[ind,]
 array=as.vector(obsT)
 sortIndex = sort(array, index.return=TRUE) 
 I=sortIndex$ix[c(which(sortIndex$x>0)-1,n*tn)]
 T1=array[I]
 J=sapply(1:length(array),function(k){min(which(T1==array[k]))})
-# array=T1[J]
 
 epsilon1<-matrix(rnorm(n*tn, mean = rep(rnorm(n, mean = 0, sd = 1),tn), sd = rep(0.2*(1:tn),each=n) ),n,tn)
-# mu0=0.5*obsT+t(VTM(v1,tn));
 if (set==1){
   Y=t(VTM(X*beta0,tn))+t(VTM(X*beta0,tn))*obsT+epsilon1;
 }else if (set==2){
@@ -67,23 +53,15 @@ if (set==1){
 }else if (set==44){
   Y= t(VTM(rexp(n,1),tn))+.2*t(VTM(v1,tn))*obsT+t(VTM(X*beta0,tn))+t(VTM(X*beta0,tn))*10*log(obsT+1)+epsilon1;
 }else if (set==5){
-  # scale=c(c(0, 3, 6, 12, 18, 24, 30, 36)/12,seq(3.25,4.75,by=.25))/seq(0,14,by=1)
   b0 = matrix(pmax(rnorm(n*tn,mean = 50, sd = 16), rep(15,n*tn)),n,tn)
-  # b1=matrix(rnorm(n*tn,mean = -4, sd = 2.75),n,tn)
   b1=rnorm(n*tn,mean = -2, sd = 2.75)-0*v1
-  # epsilon1=matrix(rnorm(n*tn,mean = 0, sd=5.8),n,tn)
   epsilon1=matrix(rnorm(n*tn,mean = 0, sd = sqrt(0.667*abs(b0 + b1* obsT/4 + +t(VTM(X*beta0*8,tn))*obsT/4))),n, tn)
   Y= b0+b1*obsT/4+t(VTM(X*beta0*8,tn))*obsT/4+epsilon1;
-  # obsT[Y<15]=0
-}else if (set==6){
-  # scale=c(c(0, 3, 6, 12, 18, 24, 30, 36)/12,seq(3.25,4.75,by=.25))/seq(0,14,by=1)
+ }else if (set==6){
   b0 = matrix(pmax(rnorm(n*tn,mean = 50, sd = 16), rep(15,n*tn)),n,tn)
-  # b1=matrix(rnorm(n*tn,mean = -4, sd = 2.75),n,tn)
   b1=rnorm(n*tn,mean = -2, sd = 2.75)-5*v1
-  # epsilon1=matrix(rnorm(n*tn,mean = 0, sd=5.8),n,tn)
   epsilon1=matrix(rnorm(n*tn,mean = 0, sd = sqrt(0.667*abs(b0 + b1* obsT/4 + +t(VTM(X*beta0*8,tn))*obsT/4))),n, tn)
   Y= b0+b1*obsT/4+t(VTM(X*beta0*8,tn))*obsT/4+epsilon1;
-  # obsT[Y<15]=0
 }
 
 
@@ -93,8 +71,7 @@ out=list('X'=X,'Wd'=Wd,'Wr'=Wr,'obsT'=obsT,'delta'=delta,'T1'=T1,'dN'=dN,'Y'=Y,'
 
 
 poisson=function(C=T,Lambda,ends,Xg=X*gamma0,v2){
-  # lambda00=@(st,Xg,v2,Lda,Case)Lda;
-    n=nrow(Lambda);k=ncol(Lambda);tn=1000;
+     n=nrow(Lambda);k=ncol(Lambda);tn=1000;
     obsT=matrix(0,n,tn);
     for (i in 1:n){
     id=1; st=0;  J=1;  delta=1; 
@@ -125,7 +102,6 @@ poisson=function(C=T,Lambda,ends,Xg=X*gamma0,v2){
 
 
 poisson2=function(C=T,Lambda=matrix(10,nrow=n,ncol=1),ends,Xg=X*gamma0,v2){
-  # lambda00=@(st,Xg,v2,Lda,Case)Lda;
   n=nrow(Lambda);k=ncol(Lambda);tn=1000;
   obsT=matrix(0,n,tn);
   for (i in 1:n){
@@ -254,9 +230,8 @@ resam.nonlinear<- function(v,dat){
   est=ginv(sigma)%*%c(sum(nu),sum(nu2)) 
   
   ## nonlinear: splines
-  # phi = data.frame(ns(tt,knots = c(1,3,6,10))) #quantile(apply(obsT, 1, max),.75)
+
   phi = data.frame(bs(tt,df=5))
-  # timestart<-Sys.time()
   dYbar=matrix(NA,n,length(tt))
   Xbar=matrix(NA,n,length(tt));dGbar=matrix(NA,n,length(tt))
   Xbar1=matrix(NA,n,length(tt));dGbar1=matrix(NA,n,length(tt))
@@ -284,9 +259,7 @@ resam.nonlinear<- function(v,dat){
       }
     }
   }
-  # timeend<-Sys.time()
-  # print(timeend-timestart)
-  
+
   nu=rep(NA,length(tt));nu1=rep(NA,length(tt))
   nu2=rep(NA,length(tt));nu3=rep(NA,length(tt))
   nu4=rep(NA,length(tt));nu5=rep(NA,length(tt))
@@ -309,24 +282,18 @@ resam.nonlinear<- function(v,dat){
     sigma=sigma+tmp1%*%tmp2
   }
   est.n=ginv(sigma)%*%c(sum(nu),sum(nu1),sum(nu2),sum(nu3),sum(nu4),sum(nu5))
-  # est.n=ginv(sigma[1:2,1:2])%*%c(sum(nu),sum(nu2))
-  # ginv(sigma[1,1])%*%c(sum(nu))
+
   ind=sapply(seq(0,quantile(apply(obsT, 1, max),.75),gap), function(k){which.min(abs(tt-k))})
   delta.s.true=(10*log(tt+1)/tt)[ind]
   delta.s=(as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1)/tt)[ind]
   delta.s.hat=matrix(NA,1,length(seq(0,15,gap)))
   delta.s.hat[1:length(delta.s)]=delta.s
-  # plot(tt[ind],delta.s.true,col=1,type = 'l',  ylab="GFR slope difference", xlab="Months")
-  # lines(tt[ind],delta.s,col=2)
+
   delta.gfr.true=(1+10*log(tt+1))[ind]
   delta.gfr=(est.n[1]+as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1))[ind]
   delta.gfr.hat=matrix(NA,1,length(seq(0,15,gap)))
   delta.gfr.hat[ 1:length(delta.gfr)]=delta.gfr
-  # plot(tt[ind],delta.gfr.true,col=1,type = 'l',  ylab="GFR difference", xlab="Months")
-  # lines(tt[ind],delta.gfr,col=2)
-  # legend(0,30,c("Trt","Con"),col=c(1,2),lty=c(1,1))
-  # abline(h=0,col=3,lty=3)
-  # abline(v=4,col=3,lty=3)
+ 
   
   out=c((eta_hat),est[1],est[2],delta.s.hat,delta.gfr.hat)
   
@@ -405,10 +372,7 @@ resam.nonlinear.boot<- function(index,dat){
   est=ginv(sigma)%*%c(sum(nu),sum(nu2)) 
   
   ## nonlinear: splines
-  # phi = data.frame(ns(tt,knots = c(1,3,6,10))) #quantile(apply(obsT, 1, max),.75)
   phi = data.frame(bs(tt,df=5))
-  # phi=dat.spline[match(tt, dat.spline$tt),2:6]
-  # timestart<-Sys.time()
   dYbar=matrix(NA,n,length(tt))
   Xbar=matrix(NA,n,length(tt));dGbar=matrix(NA,n,length(tt))
   Xbar1=matrix(NA,n,length(tt));dGbar1=matrix(NA,n,length(tt))
@@ -436,8 +400,6 @@ resam.nonlinear.boot<- function(index,dat){
       }
     }
   }
-  # timeend<-Sys.time()
-  # print(timeend-timestart)
   
   nu=rep(NA,length(tt));nu1=rep(NA,length(tt))
   nu2=rep(NA,length(tt));nu3=rep(NA,length(tt))
@@ -459,24 +421,15 @@ resam.nonlinear.boot<- function(index,dat){
     sigma=sigma+tmp1%*%tmp2
   }
   est.n=ginv(sigma)%*%c(sum(nu),sum(nu1),sum(nu2),sum(nu3),sum(nu4),sum(nu5)) 
-  # est.n=ginv(sigma[1:2,1:2])%*%c(sum(nu),sum(nu2))
-  # ginv(sigma[1,1])%*%c(sum(nu))
   ind=sapply(seq(0,quantile(apply(obsT, 1, max),.75),gap), function(k){which.min(abs(tt-k))})
   delta.s.true=(10*log(tt+1)/tt)[ind]
   delta.s=(as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1)/tt)[ind]
   delta.s.hat=matrix(NA,1,length(seq(0,15,gap)))
   delta.s.hat[1:length(delta.s)]=delta.s
-  # plot(tt[ind],delta.s.true,col=1,type = 'l',  ylab="GFR slope difference", xlab="Months")
-  # lines(tt[ind],delta.s,col=2)
   delta.gfr.true=(1+10*log(tt+1))[ind]
   delta.gfr=(est.n[1]+as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1))[ind]
   delta.gfr.hat=matrix(NA,1,length(seq(0,15,gap)))
   delta.gfr.hat[1:length(delta.gfr)]=delta.gfr
-  # plot(tt[ind],delta.gfr.true,col=1,type = 'l',  ylab="GFR difference", xlab="Months")
-  # lines(tt[ind],delta.gfr,col=2)
-  # legend(0,30,c("Trt","Con"),col=c(1,2),lty=c(1,1))
-  # abline(h=0,col=3,lty=3)
-  # abline(v=4,col=3,lty=3)
   
   out=c((eta_hat),est[1],est[2],delta.s.hat,delta.gfr.hat)
   
@@ -556,8 +509,6 @@ est.linear=function(dat,re){
   dat=data.frame('time'=T,'status'=delta,'X'=X)
   fit=coxph(Surv(time, status) ~ X,data = dat) 
   eta_hat=fit$coefficients
-  # test.ph <- cox.zph(fit)
-  # ggcoxzph(test.ph)
   aa=survfit(fit, newdata=data.frame('X'=0) )
   cumhaz.tt=data.frame('time'=aa$time,'cumhaz'=aa$cumhaz) 
   tt=T1
@@ -601,7 +552,6 @@ est.linear=function(dat,re){
   esttom=c((eta_hat),ginv(sigma[2,2])%*%c(sum(nu2)))
   
   #### variance estimation
-  # re=500
   v=matrix(rexp(n*re),nrow=n)
   temp=apply(v,2,resam,dat)
   est.se=apply(temp,1,sd)[1:3]
@@ -614,8 +564,6 @@ est.nonlinear=function(dat,re){
   dat=data.frame('time'=T,'status'=delta,'X'=X)
   fit=coxph(Surv(time, status) ~ X,data = dat) 
   eta_hat=fit$coefficients
-  # test.ph <- cox.zph(fit)
-  # ggcoxzph(test.ph)
   aa=survfit(fit, newdata=data.frame('X'=0) )
   cumhaz.tt=data.frame('time'=aa$time,'cumhaz'=aa$cumhaz) 
   tt=T1
@@ -626,10 +574,8 @@ est.nonlinear=function(dat,re){
   Lambda0_T=(cumhaz.tt$cumhaz[ind])
   
   ## nonlinear: splines
-  # phi = data.frame(ns(tt,knots = c(1,3,6,10))) #quantile(apply(obsT, 1, max),.75)
   phi = data.frame(bs(tt,df=5))
   dat.spline=data.frame(tt=tt,phi=phi)
-  # timestart<-Sys.time()
   dYbar=matrix(NA,n,length(tt))
   Xbar=matrix(NA,n,length(tt));dGbar=matrix(NA,n,length(tt))
   Xbar1=matrix(NA,n,length(tt));dGbar1=matrix(NA,n,length(tt))
@@ -657,8 +603,7 @@ est.nonlinear=function(dat,re){
       }
     }
   }
-  # timeend<-Sys.time()
-  # print(timeend-timestart)
+
   
   nu=rep(NA,length(tt));nu1=rep(NA,length(tt))
   nu2=rep(NA,length(tt));nu3=rep(NA,length(tt))
@@ -680,33 +625,22 @@ est.nonlinear=function(dat,re){
     sigma=sigma+tmp1%*%tmp2
   }
   est.n=ginv(sigma)%*%c(sum(nu),sum(nu1),sum(nu2),sum(nu3),sum(nu4),sum(nu5))
-  # est.n=ginv(sigma[1:2,1:2])%*%c(sum(nu),sum(nu2))
-  # ginv(sigma[1,1])%*%c(sum(nu))
   ind=sapply(seq(0,quantile(apply(obsT, 1, max),.75),gap), function(k){which.min(abs(tt-k))})
   delta.s.true=(10*log(tt+1)/tt)[ind]
   delta.s=(as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1)/tt)[ind]
   delta.s.hat=delta.s
-  # plot(tt[ind],delta.s.true,col=1,type = 'l',  ylab="GFR slope difference", xlab="Months")
-  # lines(tt[ind],delta.s,col=2)
+  
   delta.gfr.true=(1+10*log(tt+1))[ind]
   delta.gfr=(est.n[1]+as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1))[ind]
   delta.gfr.hat=delta.gfr
-  # plot(tt[ind],delta.gfr.true,col=1,type = 'l',  ylab="GFR difference", xlab="Months")
-  # lines(tt[ind],delta.gfr,col=2)
-  # legend(0,30,c("Trt","Con"),col=c(1,2),lty=c(1,1))
-  # abline(h=0,col=3,lty=3)
-  # abline(v=4,col=3,lty=3)
   
-  # re=200
+
   v=matrix(rexp(n*re),nrow=n)
   temp=apply(v,2,resam.nonlinear,dat)
   est.se=apply(temp,1,sd)[1:3]
   delta.s.se=apply(temp,1,sd,na.rm=TRUE)[4:(4+nn-1)]
   delta.s.up=apply(temp,1,quantile,0.975,na.rm=TRUE)[4:(4+nn-1)]
   delta.s.low=apply(temp,1,quantile,0.025,na.rm=TRUE)[4:(4+nn-1)]
-  # delta.gfr.se[l,]=apply(temp,1,sd,na.rm=TRUE)[(4+nn):(4+nn*2-1)]
-  # delta.gfr.up[l,]=apply(temp,1,quantile,0.975,na.rm=TRUE)[(4+nn):(4+nn*2-1)]
-  # delta.gfr.low[l,]=apply(temp,1,quantile,0.025,na.rm=TRUE)[(4+nn):(4+nn*2-1)]
   
   out=list('delta.s.hat'=delta.s.hat,'delta.s.se'=delta.s.se,
            'delta.s.up'=delta.s.up,'delta.s.low'=delta.s.low)
