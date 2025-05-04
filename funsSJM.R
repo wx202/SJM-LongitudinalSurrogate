@@ -628,11 +628,13 @@ est.nonlinear=function(dat,re){
   ind=sapply(seq(0,quantile(apply(obsT, 1, max),.75),gap), function(k){which.min(abs(tt-k))})
   delta.s.true=(10*log(tt+1)/tt)[ind]
   delta.s=(as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1)/tt)[ind]
-  delta.s.hat=delta.s
+  delta.s.hat=matrix(NA,1,length(seq(0,15,gap)))
+  delta.s.hat[1:length(delta.s)]=delta.s
   
   delta.gfr.true=(1+10*log(tt+1))[ind]
   delta.gfr=(est.n[1]+as.matrix(phi)%*%as.matrix(est.n[-1],ncol=1))[ind]
-  delta.gfr.hat=delta.gfr
+  delta.gfr.hat=matrix(NA,1,length(seq(0,15,gap)))
+  delta.gfr.hat[1:length(delta.gfr)]=delta.gfr
   
 
   v=matrix(rexp(n*re),nrow=n)
