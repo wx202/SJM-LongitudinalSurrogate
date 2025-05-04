@@ -75,8 +75,8 @@ gap=.1; nn=length(seq(0,15,gap))
 #out.nice is nice display
 
 out=est.nonlinear(dat,re=5)
-out.nice = data.frame(out$delta.s.hat,out$delta.s.se, out$delta.s.low,out$delta.s.up)
-rownames(out.nice) = c("Estimate","SE","Lower 95%", "Upper 95%")
+out.nice = data.frame(as.numeric(out$delta.s.hat),out$delta.s.se, out$delta.s.low,out$delta.s.up)
+colnames(out.nice) = c("Estimate","SE","Lower 95%", "Upper 95%")
 out.nice
 
 jtimeend<-Sys.time()
